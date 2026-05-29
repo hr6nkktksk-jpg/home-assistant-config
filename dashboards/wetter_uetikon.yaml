@@ -1,0 +1,410 @@
+title: Wetter Uetikon am See
+views:
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # VIEW 1 – Übersicht
+  # ═══════════════════════════════════════════════════════════════════════════
+  - title: Übersicht
+    path: uebersicht
+    icon: mdi:weather-partly-cloudy
+    cards:
+      - type: vertical-stack
+        cards:
+
+          # ── Kopfzeile ────────────────────────────────────────────────────
+          - type: markdown
+            content: >
+              <ha-icon icon="mdi:map-marker"></ha-icon>
+              **Uetikon am See** · PLZ 8707 · Kanton Zürich ·
+              <ha-icon icon="mdi:update"></ha-icon>
+              *Quelle: MeteoSchweiz – alle 30 Min.*
+
+          # ── Aktuelle Temperatur & Zustand ──────────────────────────────
+          - type: glance
+            title: Aktuell
+            show_name: true
+            show_icon: true
+            show_state: true
+            entities:
+              - entity: sensor.uetikon_temperatur
+                name: Temperatur
+              - entity: sensor.uetikon_wetter_beschreibung
+                name: Wetterlage
+              - entity: sensor.uetikon_temp_max_heute
+                name: Tageshöchst
+              - entity: sensor.uetikon_temp_min_heute
+                name: Tagestiefst
+
+          # ── Wind & Niederschlag ─────────────────────────────────────────
+          - type: glance
+            title: Wind & Niederschlag
+            show_name: true
+            show_icon: true
+            show_state: true
+            entities:
+              - entity: sensor.uetikon_wind_geschwindigkeit
+                name: Wind
+              - entity: sensor.uetikon_wind_richtung_text
+                name: Richtung
+              - entity: sensor.uetikon_niederschlag_stunde
+                name: NS letzte h
+              - entity: sensor.uetikon_niederschlag_heute
+                name: NS heute
+
+          # ── Wetterwarnungen (nur sichtbar wenn aktiv) ───────────────────
+          - type: conditional
+            conditions:
+              - condition: state
+                entity: binary_sensor.uetikon_wetterwarnung_aktiv
+                state: "on"
+            card:
+              type: markdown
+              content: >
+                ## ⚠️ MeteoSchweiz Wetterwarnung
+                {{ states('sensor.uetikon_warnung_text') }}
+              style: |
+                ha-card {
+                  border-left: 4px solid var(--error-color);
+                  background: rgba(var(--error-color-rgb, 211,47,47), 0.08);
+                }
+
+          # ── 7-Tage-Vorhersage ───────────────────────────────────────────
+          - type: markdown
+            content: "### Vorhersage nächste 7 Tage"
+
+          - type: glance
+            show_name: true
+            show_icon: true
+            show_state: true
+            entities:
+              - entity: sensor.uetikon_vorhersage_tag_0
+                name: >
+                  Heute
+              - entity: sensor.uetikon_vorhersage_tag_1
+                name: Morgen
+              - entity: sensor.uetikon_vorhersage_tag_2
+                name: Übermorgen
+              - entity: sensor.uetikon_vorhersage_tag_3
+                name: +3 Tage
+              - entity: sensor.uetikon_vorhersage_tag_4
+                name: +4 Tage
+              - entity: sensor.uetikon_vorhersage_tag_5
+                name: +5 Tage
+              - entity: sensor.uetikon_vorhersage_tag_6
+                name: +6 Tage
+
+          # ── Temperaturverlauf (letzte 24 h) ────────────────────────────
+          - type: history-graph
+            title: Temperaturverlauf letzte 24 h
+            hours_to_show: 24
+            refresh_interval: 1800
+            entities:
+              - entity: sensor.uetikon_temperatur
+                name: Temperatur
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # VIEW 2 – 7-Tage-Detail
+  # ═══════════════════════════════════════════════════════════════════════════
+  - title: Vorhersage
+    path: vorhersage
+    icon: mdi:calendar-week
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: markdown
+            content: "## 7-Tage-Vorhersage Uetikon am See"
+
+          # Je ein Entities-Block pro Tag mit Max-Temp, Min-Temp, Niederschlag
+          - type: entities
+            title: Heute
+            icon: mdi:calendar-today
+            entities:
+              - type: attribute
+                entity: sensor.uetikon_vorhersage_tag_0
+                attribute: wochentag
+                name: Wochentag
+                icon: mdi:calendar
+              - entity: sensor.uetikon_vorhersage_tag_0
+                name: Höchsttemperatur
+                icon: mdi:thermometer-chevron-up
+              - type: attribute
+                entity: sensor.uetikon_vorhersage_tag_0
+                attribute: min_temp
+                name: Tiefsttemperatur
+                icon: mdi:thermometer-chevron-down
+                suffix: " °C"
+              - type: attribute
+                entity: sensor.uetikon_vorhersage_tag_0
+                attribute: niederschlag
+                name: Niederschlag
+                icon: mdi:weather-rainy
+                suffix: " mm"
+
+          - type: entities
+            title: Morgen
+            icon: mdi:calendar-arrow-right
+            entities:
+              - type: attribute
+                entity: sensor.uetikon_vorhersage_tag_1
+                attribute: wochentag
+                name: Wochentag
+                icon: mdi:calendar
+              - entity: sensor.uetikon_vorhersage_tag_1
+                name: Höchsttemperatur
+                icon: mdi:thermometer-chevron-up
+              - type: attribute
+                entity: sensor.uetikon_vorhersage_tag_1
+                attribute: min_temp
+                name: Tiefsttemperatur
+                icon: mdi:thermometer-chevron-down
+                suffix: " °C"
+              - type: attribute
+                entity: sensor.uetikon_vorhersage_tag_1
+                attribute: niederschlag
+                name: Niederschlag
+                icon: mdi:weather-rainy
+                suffix: " mm"
+
+          - type: entities
+            title: Übermorgen
+            icon: mdi:calendar-arrow-right
+            entities:
+              - type: attribute
+                entity: sensor.uetikon_vorhersage_tag_2
+                attribute: wochentag
+                name: Wochentag
+                icon: mdi:calendar
+              - entity: sensor.uetikon_vorhersage_tag_2
+                name: Höchsttemperatur
+                icon: mdi:thermometer-chevron-up
+              - type: attribute
+                entity: sensor.uetikon_vorhersage_tag_2
+                attribute: min_temp
+                name: Tiefsttemperatur
+                icon: mdi:thermometer-chevron-down
+                suffix: " °C"
+              - type: attribute
+                entity: sensor.uetikon_vorhersage_tag_2
+                attribute: niederschlag
+                name: Niederschlag
+                icon: mdi:weather-rainy
+                suffix: " mm"
+
+          - type: entities
+            title: Tag +3
+            icon: mdi:calendar-arrow-right
+            entities:
+              - type: attribute
+                entity: sensor.uetikon_vorhersage_tag_3
+                attribute: wochentag
+                name: Wochentag
+                icon: mdi:calendar
+              - entity: sensor.uetikon_vorhersage_tag_3
+                name: Höchsttemperatur
+                icon: mdi:thermometer-chevron-up
+              - type: attribute
+                entity: sensor.uetikon_vorhersage_tag_3
+                attribute: min_temp
+                name: Tiefsttemperatur
+                icon: mdi:thermometer-chevron-down
+                suffix: " °C"
+              - type: attribute
+                entity: sensor.uetikon_vorhersage_tag_3
+                attribute: niederschlag
+                name: Niederschlag
+                icon: mdi:weather-rainy
+                suffix: " mm"
+
+          - type: entities
+            title: Tag +4
+            icon: mdi:calendar-arrow-right
+            entities:
+              - type: attribute
+                entity: sensor.uetikon_vorhersage_tag_4
+                attribute: wochentag
+                name: Wochentag
+                icon: mdi:calendar
+              - entity: sensor.uetikon_vorhersage_tag_4
+                name: Höchsttemperatur
+                icon: mdi:thermometer-chevron-up
+              - type: attribute
+                entity: sensor.uetikon_vorhersage_tag_4
+                attribute: min_temp
+                name: Tiefsttemperatur
+                icon: mdi:thermometer-chevron-down
+                suffix: " °C"
+              - type: attribute
+                entity: sensor.uetikon_vorhersage_tag_4
+                attribute: niederschlag
+                name: Niederschlag
+                icon: mdi:weather-rainy
+                suffix: " mm"
+
+          - type: entities
+            title: Tag +5
+            icon: mdi:calendar-arrow-right
+            entities:
+              - type: attribute
+                entity: sensor.uetikon_vorhersage_tag_5
+                attribute: wochentag
+                name: Wochentag
+                icon: mdi:calendar
+              - entity: sensor.uetikon_vorhersage_tag_5
+                name: Höchsttemperatur
+                icon: mdi:thermometer-chevron-up
+              - type: attribute
+                entity: sensor.uetikon_vorhersage_tag_5
+                attribute: min_temp
+                name: Tiefsttemperatur
+                icon: mdi:thermometer-chevron-down
+                suffix: " °C"
+              - type: attribute
+                entity: sensor.uetikon_vorhersage_tag_5
+                attribute: niederschlag
+                name: Niederschlag
+                icon: mdi:weather-rainy
+                suffix: " mm"
+
+          - type: entities
+            title: Tag +6
+            icon: mdi:calendar-arrow-right
+            entities:
+              - type: attribute
+                entity: sensor.uetikon_vorhersage_tag_6
+                attribute: wochentag
+                name: Wochentag
+                icon: mdi:calendar
+              - entity: sensor.uetikon_vorhersage_tag_6
+                name: Höchsttemperatur
+                icon: mdi:thermometer-chevron-up
+              - type: attribute
+                entity: sensor.uetikon_vorhersage_tag_6
+                attribute: min_temp
+                name: Tiefsttemperatur
+                icon: mdi:thermometer-chevron-down
+                suffix: " °C"
+              - type: attribute
+                entity: sensor.uetikon_vorhersage_tag_6
+                attribute: niederschlag
+                name: Niederschlag
+                icon: mdi:weather-rainy
+                suffix: " mm"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # VIEW 3 – Details & Verlauf
+  # ═══════════════════════════════════════════════════════════════════════════
+  - title: Details
+    path: details
+    icon: mdi:chart-line
+    cards:
+      - type: vertical-stack
+        cards:
+
+          # ── Alle Sensoren im Überblick ──────────────────────────────────
+          - type: entities
+            title: Aktuelle Messwerte
+            icon: mdi:weather-partly-cloudy
+            show_header_toggle: false
+            entities:
+              - entity: sensor.uetikon_temperatur
+                name: Temperatur aktuell
+              - entity: sensor.uetikon_temp_max_heute
+                name: Tageshöchst
+              - entity: sensor.uetikon_temp_min_heute
+                name: Tagestiefst
+              - type: divider
+              - entity: sensor.uetikon_wind_geschwindigkeit
+                name: Windgeschwindigkeit
+              - entity: sensor.uetikon_wind_richtung
+                name: Windrichtung (Grad)
+              - entity: sensor.uetikon_wind_richtung_text
+                name: Windrichtung
+              - type: divider
+              - entity: sensor.uetikon_niederschlag_stunde
+                name: Niederschlag (letzte Stunde)
+              - entity: sensor.uetikon_niederschlag_heute
+                name: Niederschlag heute
+              - type: divider
+              - entity: sensor.uetikon_wetter_beschreibung
+                name: Wetterlage
+              - entity: sensor.uetikon_wetter_zustand
+                name: HA-Zustand
+              - type: divider
+              - entity: binary_sensor.uetikon_wetterwarnung_aktiv
+                name: Wetterwarnung aktiv
+              - entity: sensor.uetikon_warnung_text
+                name: Warnungstext
+
+          # ── Temperaturverlauf 48 h ──────────────────────────────────────
+          - type: history-graph
+            title: Temperatur letzte 48 h
+            hours_to_show: 48
+            refresh_interval: 1800
+            entities:
+              - entity: sensor.uetikon_temperatur
+                name: Temperatur
+
+          # ── Wind letzte 24 h ────────────────────────────────────────────
+          - type: history-graph
+            title: Wind letzte 24 h
+            hours_to_show: 24
+            refresh_interval: 1800
+            entities:
+              - entity: sensor.uetikon_wind_geschwindigkeit
+                name: Windgeschwindigkeit (km/h)
+
+          # ── Niederschlag letzte 24 h ────────────────────────────────────
+          - type: history-graph
+            title: Niederschlag letzte 24 h
+            hours_to_show: 24
+            refresh_interval: 1800
+            entities:
+              - entity: sensor.uetikon_niederschlag_stunde
+                name: Niederschlag (mm/h)
+
+          # ── Rohdaten (Debug) ────────────────────────────────────────────
+          - type: entities
+            title: Rohsensor (Debug)
+            icon: mdi:api
+            show_header_toggle: false
+            entities:
+              - entity: sensor.meteoswiss_uetikon_rohdaten
+                name: REST-Rohsensor (Temperatur)
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # VIEW 4 – HACS MeteoSwiss Integration (optional)
+  # Wird verwendet wenn die HACS MeteoSwiss Integration installiert ist.
+  # Entität: weather.uetikon_am_see
+  # ═══════════════════════════════════════════════════════════════════════════
+  - title: MeteoSwiss HACS
+    path: hacs-weather
+    icon: mdi:home-assistant
+    cards:
+      - type: markdown
+        content: >
+          ## MeteoSwiss HACS-Integration
+
+          Dieses Tab nutzt die offizielle MeteoSwiss HACS-Integration für ein
+          erweitertes Wetter-Widget mit interaktiver Vorhersage.
+
+          **Einrichtung:**
+          1. [HACS](https://hacs.xyz) installieren
+          2. In HACS → Integrationen → `MeteoSwiss` suchen & installieren
+          3. Home Assistant neu starten
+          4. Einstellungen → Integrationen → MeteoSwiss hinzufügen
+             - PLZ: **8707**
+             - Name: **Uetikon am See**
+          5. Danach ist `weather.uetikon_am_see` verfügbar.
+
+      # Dieser Card-Block ist aktiv sobald weather.uetikon_am_see existiert
+      - type: weather-forecast
+        entity: weather.uetikon_am_see
+        name: Uetikon am See
+        show_forecast: true
+        forecast_type: daily
+
+      - type: weather-forecast
+        entity: weather.uetikon_am_see
+        name: Stündliche Vorhersage
+        show_forecast: true
+        forecast_type: hourly

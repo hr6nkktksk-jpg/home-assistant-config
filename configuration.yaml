@@ -1,0 +1,41 @@
+homeassistant:
+  name: Uetikon am See
+  latitude: 47.2817
+  longitude: 8.6892
+  elevation: 410
+  unit_system: metric
+  currency: CHF
+  country: CH
+  language: de
+  time_zone: Europe/Zurich
+  packages: !include_dir_named packages
+
+# Standard-Komponenten (Logging, Verlauf, Kalender etc.)
+default_config:
+
+http:
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 127.0.0.1
+    - 172.30.32.0/23
+
+# Lovelace im Storage-Modus; zusätzliches Wetter-Dashboard als YAML-Datei
+lovelace:
+  mode: storage
+  dashboards:
+    wetter-uetikon:
+      mode: yaml
+      filename: dashboards/wetter_uetikon.yaml
+      title: Wetter Uetikon
+      icon: mdi:weather-partly-cloudy
+      show_in_sidebar: true
+      require_admin: false
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Optional: MeteoSwiss HACS-Integration
+# 1. HACS installieren: https://hacs.xyz
+# 2. Integration suchen: "MeteoSwiss"
+# 3. Neustart, dann unter Einstellungen → Integrationen → MeteoSwiss hinzufügen
+#    PLZ: 8707  |  Name: Uetikon am See
+# Das erstellt die Entität weather.uetikon_am_see, die im Dashboard verwendet wird.
+# ─────────────────────────────────────────────────────────────────────────────

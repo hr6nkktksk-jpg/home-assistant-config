@@ -1,0 +1,346 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# MeteoSwiss Sensoren für Uetikon am See (PLZ 8707)
+#
+# Quelle: MeteoSwiss App-API (öffentlich, kein API-Key erforderlich)
+#   https://app-prod-ws.meteoswiss-app.ch/v1/plzDetail?plz=870700
+#
+# Aktualisierung: alle 30 Minuten
+# ─────────────────────────────────────────────────────────────────────────────
+
+rest:
+  - resource: "https://app-prod-ws.meteoswiss-app.ch/v1/plzDetail?plz=870700"
+    scan_interval: 1800
+    timeout: 30
+    sensor:
+      - name: "MeteoSwiss Uetikon Rohdaten"
+        unique_id: meteoswiss_uetikon_raw
+        # Zustand = aktuelle Temperatur; alle weiteren Daten als Attribute
+        value_template: "{{ value_json.currentWeather.temperature | float(0) }}"
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        icon: mdi:weather-partly-cloudy
+        json_attributes_path: "$"
+        json_attributes:
+          - currentWeather
+          - forecast
+          - warnings
+          - graph
+
+template:
+  - sensor:
+      # ── Aktuelle Bedingungen ──────────────────────────────────────────────
+
+      - name: "Uetikon Temperatur"
+        unique_id: uetikon_temperatur
+        state: >
+          {{ state_attr('sensor.meteoswiss_uetikon_rohdaten', 'currentWeather').temperature
+             | float(0) | round(1) }}
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        icon: mdi:thermometer
+
+      - name: "Uetikon Wetter Beschreibung"
+        unique_id: uetikon_wetter_beschreibung
+        state: >
+          {% set i = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'currentWeather').iconV2 | int(0) %}
+          {% set c = {
+            1:'Sonnig', 2:'Meistens sonnig', 3:'Teilweise bewölkt',
+            4:'Bewölkt', 5:'Sehr bewölkt', 6:'Bedeckt',
+            7:'Nebel', 8:'Leichter Regen', 9:'Regen',
+            10:'Starker Regen', 11:'Gewitter', 12:'Leichter Schneeregen',
+            13:'Schneeregen', 14:'Leichter Schneefall', 15:'Schneefall',
+            16:'Starker Schneefall', 17:'Schneegestöber',
+            18:'Leichte Schauer', 19:'Schauer', 20:'Starke Schauer',
+            21:'Gewitterschauer', 22:'Schneeregenschauer',
+            23:'Schneeschauer', 24:'Leichter Schneeschauer',
+            25:'Starker Schneeschauer', 26:'Starker Gewitterschauer',
+            27:'Hochnebel', 28:'Schneetreiben', 29:'Starkes Schneetreiben',
+            30:'Sturm'
+          } %}
+          {{ c.get(i, 'Unbekannt') }}
+
+      - name: "Uetikon Wetter Zustand"
+        unique_id: uetikon_wetter_zustand
+        # Bildet MeteoSwiss-Icon-Codes auf HA weather-Zustände ab
+        state: >
+          {% set i = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'currentWeather').iconV2 | int(0) %}
+          {% if   i == 1              %}sunny
+          {% elif i in [2, 3]         %}partlycloudy
+          {% elif i in [4, 5, 6, 27]  %}cloudy
+          {% elif i == 7              %}fog
+          {% elif i in [8, 14, 18]    %}rainy
+          {% elif i in [9, 19, 20]    %}pouring
+          {% elif i in [10, 11, 21, 26] %}lightning-rainy
+          {% elif i in [12, 13, 22, 23] %}snowy-rainy
+          {% elif i in [15, 16, 24, 25, 17, 28, 29] %}snowy
+          {% elif i == 30             %}exceptional
+          {% else                     %}partlycloudy{% endif %}
+        icon: >
+          {% set i = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'currentWeather').iconV2 | int(0) %}
+          {% set m = {
+            1:'mdi:weather-sunny', 2:'mdi:weather-partly-cloudy',
+            3:'mdi:weather-partly-cloudy', 4:'mdi:weather-cloudy',
+            5:'mdi:weather-cloudy', 6:'mdi:weather-cloudy',
+            7:'mdi:weather-fog', 8:'mdi:weather-rainy',
+            9:'mdi:weather-rainy', 10:'mdi:weather-pouring',
+            11:'mdi:weather-lightning-rainy', 12:'mdi:weather-snowy-rainy',
+            13:'mdi:weather-snowy-rainy', 14:'mdi:weather-rainy',
+            15:'mdi:weather-snowy', 16:'mdi:weather-snowy',
+            17:'mdi:weather-snowy', 18:'mdi:weather-rainy',
+            19:'mdi:weather-rainy', 20:'mdi:weather-pouring',
+            21:'mdi:weather-lightning-rainy', 22:'mdi:weather-snowy-rainy',
+            23:'mdi:weather-snowy', 24:'mdi:weather-snowy',
+            25:'mdi:weather-snowy', 26:'mdi:weather-lightning-rainy',
+            27:'mdi:weather-cloudy', 28:'mdi:weather-snowy',
+            29:'mdi:weather-snowy', 30:'mdi:weather-hurricane'
+          } %}
+          {{ m.get(i, 'mdi:weather-partly-cloudy') }}
+
+      - name: "Uetikon Wind Geschwindigkeit"
+        unique_id: uetikon_wind_geschwindigkeit
+        state: >
+          {% set g = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'graph') %}
+          {{ g.windSpeed3h[0] | float(0) if g and g.windSpeed3h else 0 }}
+        unit_of_measurement: "km/h"
+        device_class: wind_speed
+        state_class: measurement
+        icon: mdi:weather-windy
+
+      - name: "Uetikon Wind Richtung"
+        unique_id: uetikon_wind_richtung
+        state: >
+          {% set g = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'graph') %}
+          {{ g.windDirection3h[0] | int(0) if g and g.windDirection3h else 0 }}
+        unit_of_measurement: "°"
+        icon: mdi:compass
+
+      - name: "Uetikon Wind Richtung Text"
+        unique_id: uetikon_wind_richtung_text
+        state: >
+          {% set d = states('sensor.uetikon_wind_richtung') | int(0) %}
+          {% if   d >= 338 or d < 23  %}N
+          {% elif d < 68              %}NO
+          {% elif d < 113             %}O
+          {% elif d < 158             %}SO
+          {% elif d < 203             %}S
+          {% elif d < 248             %}SW
+          {% elif d < 293             %}W
+          {% else                     %}NW{% endif %}
+        icon: mdi:compass-rose
+
+      - name: "Uetikon Niederschlag Stunde"
+        unique_id: uetikon_niederschlag_stunde
+        state: >
+          {% set g = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'graph') %}
+          {{ g.precipitation10m[:6] | sum | float(0) | round(1) if g and g.precipitation10m else 0 }}
+        unit_of_measurement: "mm"
+        device_class: precipitation
+        state_class: measurement
+        icon: mdi:weather-rainy
+
+      - name: "Uetikon Temp Max Heute"
+        unique_id: uetikon_temp_max_heute
+        state: >
+          {% set f = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'forecast') %}
+          {{ f[0].temperatureMax | int if f and f | length > 0 else 'unavailable' }}
+        unit_of_measurement: "°C"
+        device_class: temperature
+        icon: mdi:thermometer-chevron-up
+
+      - name: "Uetikon Temp Min Heute"
+        unique_id: uetikon_temp_min_heute
+        state: >
+          {% set f = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'forecast') %}
+          {{ f[0].temperatureMin | int if f and f | length > 0 else 'unavailable' }}
+        unit_of_measurement: "°C"
+        device_class: temperature
+        icon: mdi:thermometer-chevron-down
+
+      - name: "Uetikon Niederschlag Heute"
+        unique_id: uetikon_niederschlag_heute
+        state: >
+          {% set f = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'forecast') %}
+          {{ f[0].precipitation | float(0) | round(1) if f and f | length > 0 else 0 }}
+        unit_of_measurement: "mm"
+        device_class: precipitation
+        icon: mdi:weather-rainy
+
+      # ── 7-Tage-Vorhersage ─────────────────────────────────────────────────
+
+      - name: "Uetikon Vorhersage Tag 0"
+        unique_id: uetikon_vorhersage_tag_0
+        state: >
+          {% set f = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'forecast') %}
+          {{ f[0].temperatureMax | int if f and f | length > 0 else 'unavailable' }}
+        unit_of_measurement: "°C"
+        attributes:
+          wochentag: >
+            {% set tage = ['Mo','Di','Mi','Do','Fr','Sa','So'] %}
+            {% set f = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'forecast') %}
+            {{ tage[strptime(f[0].dayDate | string, '%Y%m%d').weekday()] if f and f | length > 0 else '--' }}
+          min_temp: >
+            {% set f = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'forecast') %}
+            {{ f[0].temperatureMin | int if f and f | length > 0 else '--' }}
+          niederschlag: >
+            {% set f = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'forecast') %}
+            {{ f[0].precipitation | float(0) | round(1) if f and f | length > 0 else 0 }}
+          icon_code: >
+            {% set f = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'forecast') %}
+            {{ f[0].iconDayV2 | int(0) if f and f | length > 0 else 0 }}
+
+      - name: "Uetikon Vorhersage Tag 1"
+        unique_id: uetikon_vorhersage_tag_1
+        state: >
+          {% set f = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'forecast') %}
+          {{ f[1].temperatureMax | int if f and f | length > 1 else 'unavailable' }}
+        unit_of_measurement: "°C"
+        attributes:
+          wochentag: >
+            {% set tage = ['Mo','Di','Mi','Do','Fr','Sa','So'] %}
+            {% set f = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'forecast') %}
+            {{ tage[strptime(f[1].dayDate | string, '%Y%m%d').weekday()] if f and f | length > 1 else '--' }}
+          min_temp: >
+            {% set f = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'forecast') %}
+            {{ f[1].temperatureMin | int if f and f | length > 1 else '--' }}
+          niederschlag: >
+            {% set f = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'forecast') %}
+            {{ f[1].precipitation | float(0) | round(1) if f and f | length > 1 else 0 }}
+          icon_code: >
+            {% set f = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'forecast') %}
+            {{ f[1].iconDayV2 | int(0) if f and f | length > 1 else 0 }}
+
+      - name: "Uetikon Vorhersage Tag 2"
+        unique_id: uetikon_vorhersage_tag_2
+        state: >
+          {% set f = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'forecast') %}
+          {{ f[2].temperatureMax | int if f and f | length > 2 else 'unavailable' }}
+        unit_of_measurement: "°C"
+        attributes:
+          wochentag: >
+            {% set tage = ['Mo','Di','Mi','Do','Fr','Sa','So'] %}
+            {% set f = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'forecast') %}
+            {{ tage[strptime(f[2].dayDate | string, '%Y%m%d').weekday()] if f and f | length > 2 else '--' }}
+          min_temp: >
+            {% set f = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'forecast') %}
+            {{ f[2].temperatureMin | int if f and f | length > 2 else '--' }}
+          niederschlag: >
+            {% set f = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'forecast') %}
+            {{ f[2].precipitation | float(0) | round(1) if f and f | length > 2 else 0 }}
+          icon_code: >
+            {% set f = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'forecast') %}
+            {{ f[2].iconDayV2 | int(0) if f and f | length > 2 else 0 }}
+
+      - name: "Uetikon Vorhersage Tag 3"
+        unique_id: uetikon_vorhersage_tag_3
+        state: >
+          {% set f = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'forecast') %}
+          {{ f[3].temperatureMax | int if f and f | length > 3 else 'unavailable' }}
+        unit_of_measurement: "°C"
+        attributes:
+          wochentag: >
+            {% set tage = ['Mo','Di','Mi','Do','Fr','Sa','So'] %}
+            {% set f = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'forecast') %}
+            {{ tage[strptime(f[3].dayDate | string, '%Y%m%d').weekday()] if f and f | length > 3 else '--' }}
+          min_temp: >
+            {% set f = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'forecast') %}
+            {{ f[3].temperatureMin | int if f and f | length > 3 else '--' }}
+          niederschlag: >
+            {% set f = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'forecast') %}
+            {{ f[3].precipitation | float(0) | round(1) if f and f | length > 3 else 0 }}
+          icon_code: >
+            {% set f = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'forecast') %}
+            {{ f[3].iconDayV2 | int(0) if f and f | length > 3 else 0 }}
+
+      - name: "Uetikon Vorhersage Tag 4"
+        unique_id: uetikon_vorhersage_tag_4
+        state: >
+          {% set f = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'forecast') %}
+          {{ f[4].temperatureMax | int if f and f | length > 4 else 'unavailable' }}
+        unit_of_measurement: "°C"
+        attributes:
+          wochentag: >
+            {% set tage = ['Mo','Di','Mi','Do','Fr','Sa','So'] %}
+            {% set f = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'forecast') %}
+            {{ tage[strptime(f[4].dayDate | string, '%Y%m%d').weekday()] if f and f | length > 4 else '--' }}
+          min_temp: >
+            {% set f = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'forecast') %}
+            {{ f[4].temperatureMin | int if f and f | length > 4 else '--' }}
+          niederschlag: >
+            {% set f = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'forecast') %}
+            {{ f[4].precipitation | float(0) | round(1) if f and f | length > 4 else 0 }}
+          icon_code: >
+            {% set f = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'forecast') %}
+            {{ f[4].iconDayV2 | int(0) if f and f | length > 4 else 0 }}
+
+      - name: "Uetikon Vorhersage Tag 5"
+        unique_id: uetikon_vorhersage_tag_5
+        state: >
+          {% set f = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'forecast') %}
+          {{ f[5].temperatureMax | int if f and f | length > 5 else 'unavailable' }}
+        unit_of_measurement: "°C"
+        attributes:
+          wochentag: >
+            {% set tage = ['Mo','Di','Mi','Do','Fr','Sa','So'] %}
+            {% set f = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'forecast') %}
+            {{ tage[strptime(f[5].dayDate | string, '%Y%m%d').weekday()] if f and f | length > 5 else '--' }}
+          min_temp: >
+            {% set f = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'forecast') %}
+            {{ f[5].temperatureMin | int if f and f | length > 5 else '--' }}
+          niederschlag: >
+            {% set f = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'forecast') %}
+            {{ f[5].precipitation | float(0) | round(1) if f and f | length > 5 else 0 }}
+          icon_code: >
+            {% set f = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'forecast') %}
+            {{ f[5].iconDayV2 | int(0) if f and f | length > 5 else 0 }}
+
+      - name: "Uetikon Vorhersage Tag 6"
+        unique_id: uetikon_vorhersage_tag_6
+        state: >
+          {% set f = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'forecast') %}
+          {{ f[6].temperatureMax | int if f and f | length > 6 else 'unavailable' }}
+        unit_of_measurement: "°C"
+        attributes:
+          wochentag: >
+            {% set tage = ['Mo','Di','Mi','Do','Fr','Sa','So'] %}
+            {% set f = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'forecast') %}
+            {{ tage[strptime(f[6].dayDate | string, '%Y%m%d').weekday()] if f and f | length > 6 else '--' }}
+          min_temp: >
+            {% set f = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'forecast') %}
+            {{ f[6].temperatureMin | int if f and f | length > 6 else '--' }}
+          niederschlag: >
+            {% set f = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'forecast') %}
+            {{ f[6].precipitation | float(0) | round(1) if f and f | length > 6 else 0 }}
+          icon_code: >
+            {% set f = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'forecast') %}
+            {{ f[6].iconDayV2 | int(0) if f and f | length > 6 else 0 }}
+
+      # ── Warnungen ─────────────────────────────────────────────────────────
+
+      - name: "Uetikon Warnung Text"
+        unique_id: uetikon_warnung_text
+        state: >
+          {% set w = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'warnings') %}
+          {% if w and w | length > 0 %}
+            {{ w | map(attribute='text') | list | join(' | ') }}
+          {% else %}
+            Keine Warnungen aktiv
+          {% endif %}
+        icon: >
+          {% set w = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'warnings') %}
+          {{ 'mdi:alert-circle' if w and w | length > 0 else 'mdi:shield-check' }}
+
+  - binary_sensor:
+      - name: "Uetikon Wetterwarnung Aktiv"
+        unique_id: uetikon_wetterwarnung_aktiv
+        state: >
+          {% set w = state_attr('sensor.meteoswiss_uetikon_rohdaten', 'warnings') %}
+          {{ w is not none and w | length > 0 }}
+        device_class: safety
+        icon: >
+          {% if is_state('binary_sensor.uetikon_wetterwarnung_aktiv', 'on') %}
+            mdi:alert-circle
+          {% else %}
+            mdi:shield-check
+          {% endif %}
