@@ -1,0 +1,12 @@
+{
+    "config": {
+        "create_entry": {
+            "default": "Da biste zavr\u0161ili pode\u0161avanje integracije, potrebno je da ka\u017eete Ecowitt stanici da \u0161alje podatke u Home Assistant na slede\u0107u adresu:\n\n- IP servera / Naziv hosta: `{server}`\n- Putanja: `{path}`\n- Port: `{port}`\n\nKonfiguraciji Ecowitt stanice mo\u017eete pristupiti na jedan od dva na\u010dina:\n\n1. Koristite Ecowitt aplikaciju (na telefonu):\n    - Izaberite ikonu menija (\u2630) gore levo, zatim **Moji ure\u0111aji** \u2192 **Izaberite va\u0161u stanicu**\n    - Izaberite ikonu sa tri ta\u010dke (\u22ef) \u2192 **Ostalo**\n    - Izaberite **DIY Upload Servers** \u2192 **Prilago\u0111eno**\n    - Obavezno odaberite \u201eProtocol Type Same As: Ecowitt\u201c\n    - Unesite IP servera / Naziv hosta, putanju i port (navedeno iznad). _Napomena: putanja mora da se poklapa! Uklonite prvi kosu crtu iz putanje, jer \u0107e je aplikacija sama dodati._\n    - Sa\u010duvajte\n2. Otvorite Ecowitt web interfejs u pregleda\u010du na IP adresi stanice:\n    - Izaberite **Weather Services**, zatim skrolujte do \u201ePrilago\u0111eno\u201c\n    - Obavezno odaberite \u201ePrilago\u0111eno: \ud83d\udd18 Omogu\u0107i\u201c i \u201eProtocol Type Same As: \ud83d\udd18 Ecowitt\u201c\n    - Unesite IP servera / Naziv hosta, putanju i port (navedeno iznad).\n    - Sa\u010duvajte"
+        },
+        "step": {
+            "user": {
+                "description": "Da li ste sigurni da \u017eelite da podesite Ecowitt?"
+            }
+        }
+    }
+}

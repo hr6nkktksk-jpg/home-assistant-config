@@ -1,0 +1,12 @@
+{
+    "config": {
+        "create_entry": {
+            "default": "Om de integratie te voltooien, moet je het Ecowitt-station vertellen dat het gegevens naar Home Assistant moet sturen op het volgende adres: \n\n- Server IP / Host Name: `{server}` \n- Pad: `{path}`\n- Poort: `{port}` \n\nJe kunt de Ecowitt configuratie op een van de volgende twee manieren openen: \n\n1. Gebruik de Ecowitt App (op je telefoon): \n    - Selecteer het Menu Icoon (\u2630) linksboven, dan **My Devices** \u2192 **Kies je station** \n    - Selecteer het Ellipsis Icoon (\u22ef) \u2192 **Others** \n    - Selecteer **DIY Upload Servers** \u2192 **Customized** \n    - Zorg ervoor dat je 'Protocol Type Same As: Ecowitt' \n    - Voer het IP-adres van de server / hostnaam, pad en poort in (hierboven afgedrukt). _opmerking: Het pad moet overeenkomen! Verwijder de eerste forward slash van het pad, want de app zal er een voor zetten._ \n    - Klik op 'Opslaan'\n \n2. Navigeer naar de Ecowitt web UI in een browser op het IP-adres van het station: \n    - Selecteer **Weather Services** en scroll vervolgens naar beneden naar 'Customized' \n    - Zorg ervoor dat je 'Customized: \ud83d\udd18 Enable' en 'Protocol Type Same As: \ud83d\udd18 Ecowitt\" \n    - Voer het IP-adres van de server / hostnaam, pad en poort in (hierboven weergegeven) \n    - Klik op 'Opslaan'"
+        },
+        "step": {
+            "user": {
+                "description": "Weet u zeker dat u Ecowitt wilt instellen?"
+            }
+        }
+    }
+}

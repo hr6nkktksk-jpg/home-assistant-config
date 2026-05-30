@@ -1,0 +1,12 @@
+{
+    "config": {
+        "create_entry": {
+            "default": "Chun an comhth\u00e1th\u00fa a chur ar bun, n\u00ed m\u00f3r duit a r\u00e1 leis an st\u00e1isi\u00fan Ecowitt sonra\u00ed a sheoladh chuig Home Assistant ag an seoladh seo a leanas:\n\n- IP an Fhreastala\u00ed / Ainm an \u00d3staigh: `{server}`\n- Cos\u00e1n: `{path}`\n- Port: `{port}`\n\nIs f\u00e9idir leat rochtain a fh\u00e1il ar chumra\u00edocht Ecowitt ar cheann amh\u00e1in de dh\u00e1 bhealach:\n\n1. \u00das\u00e1id Aip Ecowitt (ar do ghuth\u00e1n):\n- Roghnaigh an Deilbh\u00edn Roghchl\u00e1ir (\u2630) ar an taobh uachtarach ar chl\u00e9, ansin **Mo Ghl\u00e9asanna** \u2192 **Roghnaigh do st\u00e1isi\u00fan**\n- Roghnaigh an Deilbh\u00edn Eilipsis (\u22ef) \u2192 **Eile**\n- Roghnaigh **Freastalaithe Uasl\u00f3d\u00e1la DIY** \u2192 **Saincheaptha**\n- D\u00e9an cinnte 'Cine\u00e1l Pr\u00f3tacail Mar a ch\u00e9ile le: Ecowitt' a roghn\u00fa\n- Cuir isteach IP an Fhreastala\u00ed / Ainm an \u00d3staigh, an Cos\u00e1n, agus an Port (priont\u00e1ilte thuas). _N\u00f3ta: Caithfidh an cos\u00e1n a bheith mar a ch\u00e9ile! Bain an ch\u00e9ad slais ar aghaidh \u00f3n gcos\u00e1n, mar cuirfidh an aip ceann eile ina dhiaidh._\n- S\u00e1bh\u00e1il\n1. T\u00e9igh chuig comh\u00e9adan \u00fas\u00e1ideora gr\u00e9as\u00e1in Ecowitt i mbrabhs\u00e1la\u00ed ag seoladh IP an st\u00e1isi\u00fain:\n- Roghnaigh **Seirbh\u00eds\u00ed Aimsire** agus scrollaigh s\u00edos go dt\u00ed 'Saincheaptha'\n- B\u00ed cinnte 'Saincheaptha: \ud83d\udd18 Cumasaigh' agus 'Cine\u00e1l Pr\u00f3tacail Mar a ch\u00e9ile le: \ud83d\udd18 Ecowitt' a roghn\u00fa\n- Cuir isteach IP an Fhreastala\u00ed / Ainm an \u00d3staigh, an Cos\u00e1n, agus an Port (priont\u00e1ilte thuas).\n- S\u00e1bh\u00e1il"
+        },
+        "step": {
+            "user": {
+                "description": "An bhfuil t\u00fa cinnte gur mian leat Ecowitt a chur ar bun?"
+            }
+        }
+    }
+}
